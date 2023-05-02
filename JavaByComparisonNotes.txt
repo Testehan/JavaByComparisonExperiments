@@ -1,0 +1,904 @@
+Java by Comparison - BECOME A JAVA CRAFTSMAN IN 70 EXAMPLES
+
+Foreword
+    “Programming is a passion for many, but it also deeply involves empathy and humanity.”
+
+!!! “Writing code is easy. Writing good-quality code takes effort, discipline, and a lot of practice. There are many
+    different definitions for code quality. Here’s mine:
+        Code Quality
+        The quality of code is inversely proportional to the amount of effort to understand it.”
+
+    “Creating code is but only the first step. Code is written once, but it is read and evolved many times. If the
+    code we create is of poor quality, even if it appears to function flawlessly, we have increased the cost of
+    ownership of that code over time.”
+
+!!  “The difference between average programmers and amazing ones is how easy it is for others to follow their work.”
+
+    “As you read this book, you will quickly relate to mistakes that you may have already made. The first step in
+    solving a problem is realizing it.”
+
+!   “I urge you not to rush through this book. Sometimes we have to slow down to gain speed. As you move through
+    the book, take time to read each piece of bad code and spend some time identifying things that are wrong. Jot
+    them down. Then read through the authors’ explanations”
+    “Then, think through possible solutions, again, before jumping in to read the presented solution and the reasoning.”
+
+
+Welcome
+    “Comparing good code to bad code is really helpful when you’re trying to figure out how to code in Java.”
+
+    “In this book, we’ll provide you with 70 before/after code snippets. These snippets will help any beginner in
+    Java programming to improve. We identified these snippets during our time of teaching Java to undergraduates at
+    the university. They’re all based on code we faced when correcting our students’ programming assignments.”
+
+    “Keep in mind: A fool with a tool is still a fool!”
+
+
+-------------------------------------------------------------------------------------------------------------------
+“Chapter 1 - Start Cleaning Up”
+
+    “Any fool can write code that a computer can understand. Good programmers write code that humans can understand.
+    Martin Fowler”
+
+    1. Avoid Unnecessary Comparisons
+        “The first logical conditions you learned to write probably consisted of integers and comparison operators,
+        and a beginner might use that same way of implementing conditions with boolean values. But those comparisons
+        are completely unnecessary—they’re like noise in your code”
+
+        “ if (microscope.isInorganic(sample) == true)”          BAD
+
+         "if (microscope.isInorganic(sample))"                  GOOD
+
+    2. Avoid Negations
+        “Has anyone ever told you to “think positively”? Turns out, positive expressions are better in your code than
+        negative ones because they’re often easier to grasp and they take up slightly less space.”
+
+        “if (!microscope.isHumanoid(sample)) {                  BAD
+            return Result.ALIEN;
+        } else {
+            return Result.HUMANOID;
+        }”
+
+        “if (microscope.isHumanoid(sample)) {                   GOOD
+            return Result.HUMANOID;
+        } else {
+            return Result.ALIEN;
+        }”
+
+        “If the code you’re calling comes from a third-party library, you might not have the option to invoke
+        different methods. But when you control it, don’t shy away from adding that method to the appropriate
+        class—the few lines of code are worth their characters, because they make your code clearer in other places.”
+
+    3. “Return Boolean Expressions Directly”
+
+        if (missions < 0 || name == null || name.trim().isEmpty()) {            BAD
+            return false;
+        } else {
+            return true;
+        }
+
+        boolean isValid() {                                                     GOOD
+            return missions >= 0 && name != null && !name.trim().isEmpty();
+        }
+
+        “There are times when the condition is more complex than this one. If this is the case, you should think
+        about breaking it into smaller chunks. Our advice is to capture parts of a condition with variables that have
+        meaningful names. ”
+
+    4. Simplify Boolean Expressions
+        “When you have to combine several conditions into a single check, it’s better to group them in some way. A
+        good grouping depends on the semantics of the condition, and you can try to group by topics or level of
+        abstractions. Within a method, you should combine statements that are on a similar level of abstraction. ”
+
+    5. “Avoid NullPointerException in Conditionals”
+!!     “When you validate arguments, you have to mind the order: first check for null and only then for domain-specific
+       “illegal” values. We recommend that you check for common default values like empty strings or empty lists
+       first, and only then conduct more specific checks.”
+
+!       “Also, we’ve changed the order of the checks to reflect the order of the arguments in the method signature.
+        This is a good practice, since a proper ordering of parameter validations improves the flow of reading.
+        You’re also less likely to forget to validate one of the parameters.”
+
+        “As a rule of thumb, you need parameter validation for public, protected, and default methods. That’s because
+        any part of the code can access them, and you might not control how this happens.”
+
+    6. Avoid Switch Fallthrough
+        “Some programming language constructs are infamous because of all the bugs they’ve caused over the years.
+        One of them is the switch, and you should be careful when you use it”
+
+        “The bug is in the first case of the switch statement. There’s no "break" statement at the end of the case.
+        This means that the switch just continues to the next case—it falls through ”
+
+        “The switch statement is infamous for this behavior. It always continues execution until it reaches a break
+        statement or the end of the block”
+
+!!      “In the rare case where a missing break is intentional, you should leave a comment!”
+
+        “What if one adds another rank? You would have to adapt this conditional, but that’s easy to forget. The code
+        would still run through, and you wouldn’t even notice that there’s something missing! That’s why you should
+!!!     always have a fallback branch that captures values that were not explicitly coded. switch statements have
+        this built in with the "default" case. Alternatively, you can throw an AssertionError to be sure.”
+
+    7. Always Use Braces
+        “There are no curly braces after the if, so the condition applies only to the subsequent line. That makes the
+        whole method behave maliciously—the line cruiseControl.grantAdminAccess(user); is always executed and grants
+        admin access to any user! What a mess.”
+
+        “Less code is not always better—more readable code is!”
+
+        “You might argue that such an error is unrealistic and would hardly ever happen in practice for
+        security-critical code. History tells otherwise; in 2014, Apple engineers had a very similar bug in the
+        implementation of Apple’s SSL/TLS protocol for iOS. Attackers exploiting that bug could eavesdrop to any
+        secure connection of an Apple device. Scary, isn’t it?
+
+        Always using curly braces out of routine is a good defense against fallthrough bugs, as is always the using
+        auto-indentation of your IDE.”
+
+    8. Ensure Code Symmetry
+        “In essence, the issue is a lack of code symmetry. Check out this definition by Kent Beck[20]: “Things that
+        are almost the same can be divided into parts that are identical and parts that are clearly different.”
+
+        Think about it. Do all branches express a similar concern? Do they show a parallel structure? Or in other
+        words, are all three branches really symmetrical?
+
+        The answer is: not really. In the first branch, access is denied. In the second and third branches, access is
+        granted. This isn’t symmetrical.”
+
+!!!     “The asymmetry in the code came from the fact that we were mixing authorizing code with non-authorizing code.
+        We can improve code symmetry if we separate the two into different blocks of code”
+
+        “First, we handle the unauthorized access, log it, and exit the method. Then, we handle the other two cases
+        in an if and a connected else if block.”
+
+  “What Have You Learned?”
+    “The best thing you can do now is to try out the things you’ve read about. Take a piece of code you wrote a
+    while ago and take a look at it. Can you apply some of the recommendations you’ve read about here? How does your
+    code look after these refactorings? Be sure to keep a copy of the original version to compare it against the
+    improved one. After all, that’s the theme of this book!”
+
+
+-------------------------------------------------------------------------------------------------------------------
+“Chapter 2 - “Level Up Your Code Style”
+
+    “Good code is short, simple, and symmetrical—the challenge is figuring out how to get there.
+    Sean Parent”
+
+    “As the game progresses, your character moves through the game world, interacts with its inhabitants, and gathers
+    experience through quests. Eventually, your character will gain new skills and “level up” her skills to a new a
+    stage of mastery, becoming faster, stronger, smarter, or whatever it was you were practicing.”
+
+    9. “Replace Magic Numbers with Constants”
+       “Oftentimes when programmers need to represent a set of options in code, they use a set of numbers. Without
+       additional context, we call those numbers “magic numbers”: numbers without an apparent meaning that steer the
+       program. They make your code harder to understand and more error-prone.”
+
+       “This time, we got rid of the magic part. We’ve done this by assigning each number a meaningful and
+       accessible name.”
+
+        (BASICALLY the solution would be to define constants)
+
+    10. “Favor Enums Over Integer Constants”
+        “Constants, as you’ve seen them in the previous comparison, Replace Magic Numbers with Constants, are a big
+        improvement over magic numbers. But in case you can enumerate all options, Java’s type system offers an even
+        better solution.”
+
+        “In statically typed languages like Java, there are features that you should use to spot such errors as early
+        as possible, even before the program is executed the first time. The earlier you spot an error, the cheaper
+        it is to fix it!”
+
+        (once you replaced some magic numbers with an Enum, you can use the Enum even in method signatures, so instead
+        of getting a int/Integer parameter, your method would have SHUTTLE_SPEED, your ENUM, as parameter, if only those
+        values from the ENUM are expected)
+
+        “The key advantage here is that you can no longer put a nonexistent SpeedPreset into the setPreset() method.
+        Even if you try, the Java compiler will stop you.”
+
+    11. “Favor For-Each Over For Loops”
+        “Most of the time, you don’t really need the level of detail that an index variable gives you. In those cases,
+         you should write loops in a different way, such that the low-level details of the iteration aren’t just
+         protected but are also hidden from the programmer.”
+
+!!!     “No need to handle an iteration index anymore! And it even works for arrays and unindexed collections like Set.”
+
+        “Another alternative looping mechanism is using an iterator like in Avoid Collection Modification During Iteration.”
+
+        “The rare cases where index-based iteration makes sense is when you only iterate over special parts of collections
+        or you explicitly need the index for other purposes.”
+
+    12. “Avoid Collection Modification During Iteration”
+        “The problem is that we call supplies.remove(supply) while we’re inside a for loop that iterates over the supplies”
+!!!     “In this situation, a standard implementation of the List interface, or indeed of other Collection interfaces such
+         as Set or Queue, will throw a ConcurrentModificationException. We can’t simply modify a List while we iterate over it.”
+
+        “The name ConcurrentModificationException makes many people wonder about concurrency in their single-threaded
+        application. That’s quite misleading, since no actual concurrency takes place here! Instead, we iterate over the
+        Collection, and while we’re doing that, we modify that collection. Unfortunately, no compile-time check in Java
+        saves us from this error.”
+
+!!      “The solution we’ve depicted here uses another way of iteration: a while loop that relies on the Iterator of our
+        supplies collection. The Iterator is our rescue. It acts like a pointer to an element in the list, starting with
+        the first one. We can ask if any elements are left via hasNext(), get the next() element, and safely remove()
+        the last element returned.
+
+        Although we can’t modify a List directly, the iterator is perfectly capable of doing this. Its job is to make sure
+        that everything works during the iteration.”
+
+        “Since Java 8, you can also use the new Collection.removeIf() method that makes use of lambdas. But be sure to
+        read Chapter 8, Let Your Data Flow before you use that method!”
+
+    13. “Avoid Compute-Intense Operations During Iteration”
+        “When you iterate over a data structure, you need to be careful with what kind of operations you perform. If you
+        do something that is compute-intense, it can easily turn into a performance pitfall. The code above shows a typical
+        example for this with the method find() that locates Supply objects with a regular expression.”
+
+        “Compiling a regex automaton consumes time and processing power, just as the compilation of a class takes time.
+        Usually, it’s a one-time effort, but here the regex is compiled on every iteration.
+        Be aware that some other very popular methods in the Java API, such as String.replaceAll(), behave the same way!”
+
+        “The solution to the potential performance pitfall is very simple: make sure that the computation-intense
+        operation takes place as rarely as possible.”
+
+    14. “Group with New Lines”
+        “What’s missing is space! In particular, getConversionRate() glues all lines of code together. But is this really
+        a single block or does it consist of different parts? We can improve the readability of the code by adding empty
+        lines that act as a separator. It’s similar to this book, which captures single thoughts or arguments within
+        paragraphs separated by new lines.”
+
+!!      “As a rule of thumb, you should try to group related code and concepts together and separate different groups
+        from each other through empty lines”
+
+!!      “The concept of vertical space goes even further. Robert C. Martin uses the metaphor of a newspaper in his book
+        Clean Code[Mar08] for describing vertical formatting. A good article starts with the title (class name), goes over
+        section headings (public members, constructors, and methods), down to its very details (private methods). If you
+        structure your code this way, you’ll find it much easier to make sense of a class already if you only scroll over
+        the code. Chances are, it’s easier to locate features in the class as well.”
+
+    15. “Favor Format Over Concatenation”
+!       If you have to build large strings, you can use format strings to make them more readable.
+
+        “Format strings help to overcome this issue, and they’re available in practically any contemporary programming
+        language—not just in Java. The key lies in separating the layout of a String (how it is printed) from the data
+        (what is being printed). Format strings define a coherent String in a single block using special placeholder
+        characters, marked by %”
+
+        “Point taken that it’s not so easy to see what "%S: [%tm-%<te-%<tY](Day %d)> %s%n" will print in the end. But
+        it’s a well-documented standard[23] and actually a good alternative to the cluttered code from the problem—for
+        large strings we recommend StringTemplate,[24] a powerful template engine.”
+
+!!!     “Consider documenting the formatted string with a few examples similar to Document Using Examples so that the
+        next developer reading your code doesn’t have to look up how %S or any other special formatting syntax behaves
+        to know what the resulting string will be.”
+
+    16. “Favor Java API Over DIY”
+        “Times have changed. The Java API is huge, and it comes with many classes that can help you get the job done,
+        such as String or List. Instead of reimplementing functionality from the API, you should reuse it whenever possible.
+        Experts have written and optimized the Java API over time, resulting in a fast and practically bug-free standard
+        library.”
+
+        int getQuantity(Supply supply) {                                            BAD
+            if (supply == null) {
+               throw new NullPointerException("supply must not be null");
+            }
+
+            int quantity = 0;
+            for (Supply supplyInStock : supplies) {
+                if (supply.equals(supplyInStock)) {
+                    quantity++;
+               }
+           }
+
+          return quantity;
+
+        }
+
+        int getQuantity(Supply supply) {                                          GOOD
+            Objects.requireNonNull(supply, "supply must not be null");
+
+            return Collections.frequency(supplies, supply);
+        }
+
+        “The utility class Collections provides a frequency() method that counts the number of occurrences of objects in
+        a Collection. Plus, we have used the method requireNonNull() from the utility class Objects”
+
+        “And just as important, the API received and receives extensive testing worldwide, which is probably more than
+        you can do. Chances are that your code is more prone to bugs than the API.”
+
+!!!!!   “Knowing the API well is what makes a true Java professional. You save time if you don’t reimplement (and test)
+        functionality that’s already there.”
+
+!!!!    “That last part’s important, and the learning doesn’t stop here. The Java API is huge—really huge. In Java 9,
+        there are more than 4,000 public API classes alone. Each one of these has a purpose that can help you. We don’t
+        recommend that you go through all of them right now. But when you’re programming, ask yourself now and then,
+        “Could this piece of code be useful in a different context as well?” If the answer is yes, then there’s a chance
+        that you can find a helpful class in the Java API. So you should try searching the API at least briefly.”
+            (OR YOU can search google/StackOverflow and ChatGPT to quickly find if your code can be replaced with existing
+            API)
+
+        “Eventually, you’ll learn about other helpful classes, similar to Collections or Objects. And you’ll get more
+        and more proficient in using them over time. In the end, knowing your API is what makes a true professional.”
+
+
+-------------------------------------------------------------------------------------------------------------------
+“Chapter 3 - Use Comments Wisely”
+
+    “Good code is its own best documentation. As you’re about to add a comment, ask yourself, “How can I improve the code
+    so that this comment isn’t needed?”
+        Steve McConnel”
+
+    “Unfortunately, code comments are often like our smart TV’s manual—not helpful.”
+
+    17. Remove Superfluous Comments
+        comments that are superfluous are the ones that repeat what the code says
+
+!!!!    “If you can’t fix a TODO, create an issue in your issue tracker instead where you can discuss and track that
+        problem until it’s fixed.”
+
+    18. “Remove Commented-Out Code”
+        “In any bigger code base, you’re guaranteed to find sections of commented-out code. These types of comments are
+        just clutter.”
+
+        “Programmers usually comment out code because it prevents them from getting a feature to work. They’re focused
+        on other aspects, and commenting gives them an easy way out. Some are also afraid of losing code they might need
+        again in the future and prefer to comment it instead.”
+
+        “Fortunately, commented-out code is very easy to deal with: just remove it.”
+
+    19. “Replace Comments with Constants”
+        “The benefit of these constants is that they explain their meaning in their names. That’s why there’s no longer
+        any need for additional explanation with comments: the comments have turned into actual code.”
+
+        “Comments always have a risk of becoming stale. Programmers rarely apply the same rigor to comments as they do
+        to code. Someone might change the code but ignore the comment, or they might add a new conversion rate without
+        documenting it.”
+
+    20. “Replace Comments with Utility Methods”
+        (one would think that you can just create a local variable..)
+        “This clarifies the code and gets rid of the comment. But it adds another variable to the method, and that one is
+        pretty redundant. After all, it’s returned right away.”
+
+        “To sum up, when you replace comments with utility methods, you don’t just get rid of a line of text—you can
+        make your code more modular and balance abstraction levels.”
+
+    21. Document Implementation Decisions
+        “Consider the code above. Are you wondering why the programmer decided to use a binarySearch? Well, at least he
+        left us a (helpful) comment: it has to be fast.”
+
+        // fast implementation                                                  BAD
+
+        /*                                                                       GOOD
+         * In the context of checking availability of supplies by name,
+         * facing severe performance issues with >1000 supplies
+         * we decided to use the binary search algorithm
+         * to achieve item retrieval within 1 second,
+         * accepting that we must keep the supplies sorted.
+         */
+
+        Excerpt From: Jörg Lenhard. “Java By Comparison”. Apple Books.
+
+        “Now that comment is a lot more informative. It states the use case, concerns, the solution, and also any
+        trade-offs or costs we have to pay.”
+
+!!!!!!  “The comment isn’t just more helpful now. It’s also easy to write. We simply used a template[25] and filled in
+        the necessary bits. Take a look at it:
+
+            In the context of [USE CASE],
+            facing [CONCERN]
+            we decided for [OPTION]
+            to achieve [QUALITY],
+            accepting [DOWNSIDE]”
+
+        “Use this template for documenting important decisions or tricky parts of your code. It needn’t be exactly the
+        one you see here, but convention helps.”
+
+    22. Document Using Examples
+        “Some programming constructs are very powerful, but also very complex. Regular expressions fall into this
+        category. You should document complex constructs in a way that makes them easier to understand.”
+
+          /**                                                                   GOOD comment with examples
+            * The expression universally identifies a supply code.
+            *
+            * Format: "S<inventory-number>\<COUNTRY-CODE>.<name>"
+            *
+            * Valid examples: "S12345\US.pasta", "S08342\CN.wrench",
+            * "S88888\EU.laptop", "S12233\RU.brush"
+            *
+            * Invalid examples:
+            * "R12345\RU.fuel"      (Resource, not supply)
+            * "S1234\US.light"      (Need five digits)
+            * "S01234\AI.coconut"   (Wrong country code. Use US, EU, RU, or CN)
+            * " S88888\EU.laptop "  (Trailing whitespaces)
+            */
+
+        Excerpt From: Jörg Lenhard. “Java By Comparison”. Apple Books.
+
+    23. “Structure JavaDoc of Packages”
+!!      “JavaDoc is the documentation facility for APIs in Java. You use it to document anything that’s public in
+        your code, including packages. If you’re writing an API and you want others to use it, that’s a must.”
+
+        “There are three parts here, separated by vertical space, and no more superfluous information.
+        The introductory sentence provides a (very) short summary of what you can achieve with the classes in this package.
+        The second part describes what you can get done with the most important classes in this package. This gives you
+        the starting point for looking deeper into the package and also a pretty good idea whether you need it. And by
+        using the @link annotation, you can simply click on the class and jump directly to it—the JavaDoc tool even checks
+        that linked classes exist when it generates the documentation.
+        Instead of annotations like @author, which capture information that is in the version control system anyway, we
+        provide a concrete example of how to implement the most important use case in the third part. That’s something a
+        developer can use instantaneously.”
+
+    24. “Structure JavaDoc of Classes and Interfaces”
+!!!     “Chances are you already know this, but you should document every public class or interface with JavaDoc. This
+        is a rule in practically all Java projects.”
+
+        “So here’s our recommendation for good JavaDoc comments for interfaces and public classes: First, start with a
+        short and concise summary. Separate this vertically from invariants the class or interface guarantees. Don’t
+        just duplicate method signatures.
+        And examples always help! So sit down and have a go at an example for how to use the interface above.”
+
+    25. “Structure JavaDoc of Methods”
+        “No. No. And no idea. We have no clue how the method will behave, even though there’s a JavaDoc comment. So if we
+        use this method, we’re no longer certain how our code will behave. That would be especially problematic if you’re
+        building an API.”
+
+            /**                                                                 GOOD
+              * Loads supplies onto the cargo ship.
+              *
+              * <p>
+              * Only lets you load as many supplies as there is remaining capacity.
+              *
+              * Example:
+              * <pre>
+              * int capacity = cargoShip.getRemainingCapacity(); // 1
+              * Queue&lt;Supply> supplies = Arrays.asList(new Supply("Apple"));
+              * Queue&lt;Supply> spareSupplies = cargoShip.load(supplies);
+              * spareSupplies.isEmpty(); // true;
+              * cargoShip.getRemainingCapacity() == 0; // true
+              * </pre>
+              *
+              * @param supplies to be loaded; must not be null
+              * @return supplies that could not be loaded because of too little
+              *          capacity; is empty if everything has been loaded
+              * @throws NullPointerException if supplies is null
+              * @see CargoShip#getRemainingCapacity() check capacity
+              * @see CargoShip#unload() unload the supplies
+              */
+
+        “The JavaDoc comment reads like a contract. It states how the input and its internal state must be to guarantee
+        a certain output and state change.”
+
+        “Even invalid input, such as null, is specified in the @param description, along with the consequences of a
+        violation: @throws a NullPointerException.”
+
+    26. “Structure JavaDoc of Constructors”
+        “Because constructors lack a name, their JavaDoc is just so important!”
+
+            /**
+              * Creates an empty inventory.
+              *
+              * @see Inventory#Inventory(Collection) instantiate with initial supplies
+              */
+              Inventory() {
+                  this(new ArrayList<>());
+              }
+
+            /**
+              * Creates an inventory with an initial shipment of supplies.
+              *
+              * @param initialSupplies Initial supplies.
+              *                        Must not be null, can be empty.
+              * @throws NullPointerException if initialSupplies is null
+              * @see Inventory#Inventory() instantiate with no supplies
+              */
+              Inventory(Collection<Supply> initialSupplies) {
+                  this.supplies = new ArrayList<>(initialSupplies);
+              }
+
+        “The first and most important thing you need to know is how to call a constructor correctly. You especially need
+        to know what preconditions you have to fulfill so that everything works out as desired. The default constructor
+        doesn’t really have preconditions and no input parameter, but the second one does: a Collection of Supply objects
+        called initialSupplies. We have to document this one like we do with other method parameters. Here, you’re not
+        allowed to enter null, and if you do, then you get a NullPointerException back. The comment states this in
+        the @throws part.”
+
+       “Second, you need information about the state of the object when the constructor finishes, because its state
+       determines which other methods you can call at this point. That’s called a postcondition. In the code above, the
+       inventory’s either going to be in an “empty” state or filled with “initial supplies.” The summary sentences of
+       both constructors describe that.”
+
+       “two @see annotations. These annotations provide hints to the developer. They outline alternatives that she may not
+        have seen otherwise. Here, we use these annotations to explain the relationship between the two constructors.”
+
+
+-------------------------------------------------------------------------------------------------------------------
+“Chapter 4 - Name Things Right”
+
+    “There are only two hard problems in Computer Science: cache invalidation and naming things.
+        Phil Karlton”
+
+    27. “Use Java Naming Conventions”
+        “We kept the name of the class because it already follows the conventions: it’s written in CamelCase, beginning
+         with a capital letter and starting every term in the name with a capital letter. Interfaces and enums work likewise.”
+
+        “To let the constants (variables that are final and static) stand out, you should write their names in
+        CAPITAL_SNAKE_CASE. This means that all letters in the name are uppercase, and you separate terms with an underscore”
+
+        “Methods, fields, parameters, and variables use a variant of camelCase where the first letter starts in lowercase.
+        This has the downside of a possible confusion of method (behavior) and variable (state) names since they’re named
+        in the same scheme. That’s why their name itself should tell the reader if it’s a method or a variable.
+        You should name your methods as verbs, as you see in drive() in the code above, or let them start with verbs
+        like is, has, save, get, or set, etc. For variables, use nouns, such as serialNumber or milesPerHour.”
+
+    28. “Follow Getter/Setter Conventions for Frameworks”
+        “And last, we renamed the setters and getters to reflect the name of the field. If the field has the name foo
+        then the getter and setter should be named getFoo() and setFoo(). Be aware that this changes slightly for a
+        boolean field. The name of the setter stays the same, but the getter turns to isFoo() instead—it reads like a question.”
+
+    29. “Avoid Single-Letter Names”
+
+    30. Avoid Abbreviations
+        “To sum up, you should try to avoid abbreviations and use them only if they’re very common. If in doubt, spell it out!”
+
+    31. Avoid Meaningless Terms
+        “To start with, we simply removed typical meaningless terms like “data,” “info,” or “flag.” It’s rare that such
+        terms add any meaning to the code.”
+
+    32. Use Domain Terminology
+        “In this book, we put the code examples in a domain inspired by a Mars mission, and we fit all the names into
+        this particular domain. This automatically makes the code much clearer.”
+
+        “To sum up: You should align names in your code to the domain it belongs to as far as possible and avoid generic names.”
+
+
+-------------------------------------------------------------------------------------------------------------------
+“Chapter 5 - “Prepare for Things Going Wrong”
+
+    “There are two ways to write error-free programs; only the third works."
+        Alan J. Perlis
+
+    “You have to ensure your program against errors even if it’s completely bug-free (and it never is). That’s because
+     there are things that you just can’t control”
+
+    “In Java, we ensure our program handle errors by catching and throwing exceptions.”
+
+    33. Fail Fast
+        “We separated the normal path from parameter validations and placed the two combined conditions at the top of
+        the method. If one of them holds, the method returns immediately and throws an IllegalArgumentException. In
+        other words, the method fails fast.”
+
+        “Failing fast makes the whole method more readable and understandable! But not only that, we even got rid of one
+        level of indentation for the normal path.”
+
+    34. “Always Catch Most Specific Exception”
+        “Exceptions in Java are part of a relatively complex type hierarchy. When you catch an exception, you should always
+        catch the most specific exception type. If you catch a more general type, you risk swallowing errors that you shouldn’t.”
+
+        “Exception is the most general exception type in Java. The only thing that’s even more general is the super
+        type of Exception: Throwable (this comes from the catch and throw metaphor). If you catch a Throwable, you’ll
+        even catch errors in the virtual machine, such as OutOfMemoryError. Don’t do this!”
+
+        “Many beginners find it tempting to catch a very general type. After all, you consume practically any type of error
+        with a single statement. But this is only good on the surface. It means that you catch exception types that you
+        don’t want to handle here, such as a NullPointerException. In most cases, this exception indicates a bug in your
+        code that you need to fix. When it occurs, you want the program to crash so that you become aware of the problem.”
+
+!!!     “Sometimes, catching the most specific exception means that you need to catch many exceptions. This might mean
+        that you have to write many catch blocks instead of just a single one. Don’t let the fact that more code is
+        needed fool you into believing that catching a general exception type is better! After all, more code with less
+        bugs is better than less code with more bugs.”
+
+        “Since Java 7, there’s the multi-catch block. Say you want to handle a NumberFormatException and an IOException
+        in the same way. Just write catch(NumberFormatException | IOException e) and combine two catch blocks into one.
+        Whichever method you use to structure your catch blocks, be sure to catch the most specific exceptions only.”
+
+    35. “Explain Cause in Message”
+        “Exception handling is not only about catching exceptions, but also about throwing them. When throwing an
+        exception, you should follow type conventions to make handling of the exception easier.”
+
+        “We can only fix bugs that we can reproduce. Otherwise, we don’t know whether we really fixed them. Typically,
+         we start with the stack trace of an exception and trace our way back in
+         “the code until we find the root cause. If the exception itself provides a detailed context, this is much easier.”
+
+         throw new IllegalArgumentException();                                                            BAD
+
+         “throw new IllegalArgumentException(                                                           GOOD
+         	                String.format("Expected %d, but got %d characters in '%s'",
+         	                    Transmission.MESSAGE_LENGTH, rawMessage.length(),
+         	                    rawMessage));”
+
+        “throw new IllegalArgumentException(                                                            GOOD
+        	                String.format("Expected number, but got '%s' in '%s'",
+        	                        rawId, rawMessage));”
+
+ !!!!!  “Instead of missing or useless information, we provide a triplet: what we expect, what we got, and the overall
+        context. A developer who traces an exception to its origin will find the source much faster with such detailed information.”
+
+        “What’s more, we can reproduce the situation that causes the exception more easily. Even better, we can reuse such
+        triples as test cases—we just need to convert them into JUnit tests to drive a bug fix and act as regression tests
+        later on. We’ll get to testing in the next chapter.”
+
+        “You probably already noticed: we use a template for the message of an exception with Favor Format Over Concatenation
+        in the form of Expected [EXPECTED], but got [ACTUAL] in [CONTEXT]”
+        “You can use any format you like, of course. For us, this one really pays off—when (not if) exceptions occur in production."
+
+    36. “Avoid Breaking the Cause Chain”
+        “When tracking down a bug, a detailed cause chain is worth a pile of gold.”
+
+        “For instance, look at the code above. It catches the NumberFormatException and throws a new IllegalArgumentException
+        with an informative message instead. No bad exception handling as such—but it breaks the cause chain!”
+
+        “Can you spot the problem? It’s the IllegalArgumentException not getting the reference to its cause, the
+        NumberFormatException. Without this link there’s no cause chain. When you look at the stack trace of this
+        IllegalArgumentException, you won’t find a hint that it stems from a NumberFormatException or from what line in the
+        code. We lost a lot of useful information—the NumberFormatException has its own message that provides more
+        information and context on another level of abstraction and its own stack trace with line numbers.”
+
+!!!     “So how can we keep the cause chain instead of breaking it?”
+
+!!!!!   “Exceptions have various constructors and some of them allow us to pass in a Throwable as a cause. By passing in a
+        Throwable, we link an exception to its cause, thereby building the cause chain. We recommend that you use the
+        constructor Exception(String message, Throwable cause) and provide a message as well.”
+
+!!!     “We’ve seen many kinds of broken cause chains in actual code. Take a look at the worst of all:
+
+            catch (NumberFormatException e) {
+                // BAD! Cause chain interrupted!
+        	    throw new IllegalArgumentException(e.getCause());                           VERY BAD
+        	}
+        It seems okay. The throw provides e.getCause() as an input parameter and creates a cause chain, but it removes one
+        exception from it, namely the NumberFormatException because it only links its cause, but not the exception itself.”
+
+!!      “So if you need to throw an exception within a catch block, just pass in a message and the caught exception as a cause directly:
+
+            throw new IllegalArgumentException("Message", e);”
+
+    37. “Expose Cause in Variable”
+        “We suggest that you define and use a custom exception: the MalformedMessageException (SEE BELOW) with its own raw message field.
+        We can obtain that field later on for more detailed end-user information or for a more thorough handling of that exception.”
+
+        final class MalformedMessageException extends IllegalArgumentException {
+            final String raw;
+
+            MalformedMessageException(String message, String raw) {
+               super(String.format("%s in '%s'", message, raw));
+               this.raw = raw;
+            }
+            MalformedMessageException(String message, String raw, Throwable cause) {
+               super(String.format("%s in '%s'", message, raw), cause);
+               this.raw = raw;
+            }
+        }
+
+        “You just need to make sure that your custom exceptions stay immutable, which we do by declaring the class and its fields final.”
+
+    38. “Always Check Type Before Cast”
+        “we make sure that we can read the signal by performing a type check using the instanceof operator. This operator
+        returns true if signal can be cast to the type CrewMessage and false otherwise. We’re allowed to do the explicit
+        cast only if the check was positive. It gives us certainty that a ClassCastException won’t happen here. We’re safe!”
+
+        “So keep in mind that whenever your program interacts with the outside (for example, using a stream), you need to
+        make sure that it can handle unexpected input.”
+
+    39. Always Close Resources
+        “Programs need system resources, such as disk space, database or network connections, CPU threads, and RAM.
+        These resources are limited, and programs have to share them among each other. If a single program acquires resources
+        without releasing them, it can bring down the whole environment.”
+
+        “Since Java 7, we can safely and elegantly close resources with the try-with-resources construct. This works for
+        any class that implements the AutoCloseable interface, which practically all resource classes of the Java API do.”
+
+    40. “Always Close Multiple Resources”
+        “A try-with-resources block isn’t limited to one resource—it can handle multiple resources at the same time. Even when
+        something goes wrong, it ensures that all of the resources are always closed. To use multiple resources in a
+        try-with-resources, you just need to separate them by a semicolon:
+
+        try (open resource1; open resource2) {
+            // use  resources
+        }”
+
+!!!!    “Internally, the compiler expands each resource in the try-with-resources block and creates a nesting of multiple
+        blocks. The innermost try-finally block uses the opened resources.
+
+        // open resource1
+        try {
+            // open resource2
+            try {
+                // use resource1 and resource2
+            } finally { resource2.close(); }
+        } finally { resource1.close(); }”
+
+!!!    “Hear our advice: don’t manage resources manually—you’ll only shoot yourself in the foot. Open resources in a
+        try-with-resources block—and your feet stay unharmed.”
+
+    41. Explain Empty Catch
+        “Sometimes, swallowing an exception and doing nothing is actually the right thing to do. Nevertheless, when we
+        stumble upon an empty catch block, we always get a weird feeling: Is this a ”
+        bug? Was the catch added unintentionally, for example by the IDE, and does it hide the exception? Or is it a
+        feature? Did the programmer leave the catch block empty on intention?”
+
+        catch (NotDirectoryException e) {               BAD
+
+        }
+
+        catch (NotDirectoryException ignored) {         GOOD
+            // No directory -> no logs!
+        }”
+
+!!!!    “First, we renamed the exception variable e to ignored. It’s more self-explanatory and states explicitly that we want
+        to ignore the exception. This name is almost a convention. Modern IDEs understand it, too, and no longer warn that
+        there’s an empty catch block.
+        And second, we add a comment why we ignore the exception. This is important, because others programmers will have
+        it easier to comprehend this decision. Since it’s a sort of design decision, we suggest that you use a template here,
+        similar to Document Implementation Decisions. The template we propose is CONDITION -> EFFECT. The condition captures
+        the reason why the exception has been thrown and the effect states why we can swallow and ignore iT”
+
+
+    “What Have You Learned?”
+        “Handling exceptions is inevitable in any program you write. As you’ve seen in this chapter, it’s easy to get a
+        subtle detail wrong with exceptions, such as forgetting to link exceptions into a cause chain or failing to close
+        resources properly.”
+
+        “When you make such mistakes, your program will still compile. Java doesn’t force you to provide good messages
+        for exceptions or to link them with each other. That’s a problem, because you might realize these issues only at
+        a late stage, typically when your program has been deployed to production with real-world data.”
+
+
+-------------------------------------------------------------------------------------------------------------------
+“Chapter 6 - “Assert Things Going Right”
+
+    “Test your code, or your users will.
+        Dave Thomas and Andrew Hunt”
+
+    “To err is human. Or to put it differently, we all make mistakes. No matter how brilliant, how well educated, or
+    how experienced you are, you’re still going to write buggy code now and then. NASA’s own bugs made its Mars robots
+    land too hard, and its rockets accelerated too fast during takeoff. Pac-Man ended at a kill screen at level 256. And
+    some really terrible software errors have hurt or even killed people—for example, an X-ray machine that emitted too
+    much radiation.”
+
+    42. “Structure Tests Into Given-When-Then”
+        “Readability is just as important for testing code as it is for source code. After all, test code is code. But the
+        test here looks like it was written in a hurry and without due diligence.”
+
+!!!     “Usually, a test consists of three core parts: given, when, and then. ”
+
+        “The given part sets the stage for the actual test and captures all prerequisites for executing the functionality
+        we want to test. The when part triggers the operation that we actually want to test. And in the then part, we assert
+        that the result that the when trigger produced is actually what we expect.”
+
+        “There’s a lot you can do in terms of readability with only little changes. Formatting with new lines to separate
+        the given-when-then parts is already a big improvement. In a sense, we’ve just applied Group with New Lines
+        to highlight the specific structure of the test.”
+
+        or you can add comments:
+            // given
+            CruiseControl cruiseControl = new CruiseControl();
+
+            // when
+            cruiseControl.setPreset(SpeedPreset.PLANETARY_SPEED);
+
+            // then
+            Assertions.assertTrue(7667 == cruiseControl.getTargetSpeedKmh());”
+
+    43. Use Meaningful Assertions
+        “That message (or rather the lack of one) isn’t helpful when you’re trying to make sense of what’s broken”
+
+        “The solution is actually quite simple. We use a different assertion, one that’s made for checking if two values
+        are the same: assertEquals(). With this assertion, JUnit can provide a much better error message when the test
+        fails. It’ll look like this:
+
+            expected: <7667> but was <1337>”
+
+    44. “Expected Before Actual Value”      (pay attention to the order of values in the assert statements)
+        “t gets more obvious when you run the test and the assertion fails. If that happens, you’ll get a message like this one:
+
+            expected: <1337> but was <7667>
+
+        The message tells you that the two values in the assertEquals() method are different. That’s why the test fails as
+        it should. So far so good, but the semantics of the message are wrong. In the test, we expect the number 7667 as the
+        correct result and 1337 is the incorrect result that the cruiseControl returns. But the message tells you that it’s
+        the other way around.”
+
+!!!!    “The error comes from a mix-up in the arguments to assertEquals()—they’re in the wrong order”
+        “Our rule of thumb is: think first about what you expect.”
+
+    45. “Use Reasonable Tolerance Values”
+        “When you test floating-point computations, you need to specify a precision”
+
+        “This is easy enough with JUnit. The assertion assertEquals(double expected, double actual, double delta) supports
+        a tolerance value called delta. If you need to be exact up to two decimal places, use a tolerance value of
+        0.1*10^-2=0.001. Here, we want a precision of four decimal places, resulting in a tolerance value of at least 0.00001.
+!!!!    To sum up, you should be aware of precision and specify an acceptable tolerance level whenever you use assertEquals()
+        with either float or double.”
+
+    46. “Let JUnit Handle Exceptions”
+        “Tests and exceptions often go hand-in-hand. Tests ensure that no exceptions are thrown, or that a particular
+         exception must be thrown.”
+
+        “Each JUnit test contains the implicit assertion that no exception occurs. ”
+
+        “In the second test, we use assertThrows(). This assertion explicitly marks that we expect a specific kind of
+        exception to be thrown in the test. Looking at the code, you can see that there’s no try–catch block anymore and
+        no call to fail(). “Instead, everything’s handled by assertThrows()”
+
+    47. Describe Your Tests
+        “When tests fail, the first thing you’ll see is their name. Good names are valuable—they help you find the
+        cause for failure faster.”
+
+        “Adding comments might be one option here. But with JUnit5, there are much better solutions.
+        So how can we improve the test description here?”
+
+        @Test
+        @DisplayName("Expect 44% after filling 22l in an empty 50l tank")
+        @Disabled("We don't have small tanks anymore! TODO: Adapt for big tanks")
+        void fillTank() {....}
+
+!!!     “The first thing we’ve done is to get rid of superfluous terms in the method names. They no longer start with
+        words like test. Instead, they describe the context, the method under test, and the assertion we check”
+
+        “Describing why a test is disabled is important, because it is your motivation for not just deleting the code.
+        We suggest that you use the format of @Disabled("[why it’s disabled] TODO: [what’s the plan to enable again]").
+        This a) forces you to think about the future of this test when you disable it, and
+        b) provides a future developer with the necessary information to enable it again (instead of leaving her high and
+        dry without a clue).”
+
+    48. Favor Standalone Tests
+        “When we are teaching Java, we often see beginners who love to use the @BeforeEach and @BeforeAll annotations.
+        After all, they allow you to extract common setup code that you need in the given part of a test and write it
+        only once. That’s a good thing, because it avoids code duplication. But it comes at a price: setup methods make
+        tests harder to comprehend.”
+
+        “The key lies in making the connection of the tests to the setup code clearer”
+
+        so instead of for each, they suggest that you extract the common code in another method, and call that method in the test
+        “That’s why we extracted the setup part into a static method that we gave a meaningful name: createHalfFilledTank().”
+
+        “Essentially, we’ve made the tests stand alone. A test stands alone when you link the given, when, and then bits
+        directly within the test method.”
+
+        “Now you can understand each test independently and you don’t have to look for setup logic that’s implicitly
+        linked elsewhere. It’s also easier to move a test from one test class into another, because you no longer have
+        implicit dependencies. The compiler will tell you if you forgot something. That’s possible because the test
+        stands alone—all dependencies are explicit.”
+
+        “Tests are better if they stand alone and you can understand the complete test just by looking at the test method
+        and without having to scroll around in the code.”
+
+    49. Parametrize Your Tests
+        “Sometimes, you need to test a method or chain of methods in the same way, but with many different input
+        parameters. That’s when you want to make sure that the method works for a large range of values. It’s easy to
+        enumerate the parameters in a test method, like in the code above, but this can complicate testing.”
+
+        “The solution here consists of parameterized tests with the @ParameterizedTest and @ValueSource annotations”
+
+    50. “Cover the Edge Cases”
+        “ Instead of testing every possibility, you should cover the normal execution path and the settings that are
+        most likely to go wrong. Put differently, you should cover edge cases.”
+
+        “Edge cases are highly specific for a piece of code, but usually you should at least try the boundaries of a
+        parameter’s data type. ”
+
+    “What Have You Learned?”
+        “You can’t have a sophisticated piece of software without testing code. Sometimes (read: quite often), you’ll
+        write as much or even more code for testing than you will for implementing the actual functionality”
+
+
+-------------------------------------------------------------------------------------------------------------------
+“Chapter 7 - “Design Your Objects”
+
+        “Any problem in computer science can be solved with another layer of indirection. But that usually will create another problem.
+            David Wheeler”
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
