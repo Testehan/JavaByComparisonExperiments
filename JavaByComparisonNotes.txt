@@ -882,8 +882,467 @@ Welcome
 -------------------------------------------------------------------------------------------------------------------
 “Chapter 7 - “Design Your Objects”
 
-        “Any problem in computer science can be solved with another layer of indirection. But that usually will create another problem.
-            David Wheeler”
+    “Any problem in computer science can be solved with another layer of indirection. But that usually will create another problem.
+        David Wheeler”
+
+    “This is where design comes in. Our house shouldn’t just be functional. We want the architect to make it beautiful
+    and convenient, too. The same applies to our classes and objects in Java. They shouldn’t just be functionally correct.
+    They should be beautiful to look at, and they should be convenient to use.”
+
+    “These tricks (read: best practices) are what this chapter is about. We’ll highlight some of Java’s most common
+    design principles that help you to produce code that’s more object-oriented (beautiful) and robust (convenient).”
+
+    51. “Split Method with Boolean Parameters”
+        “Using a boolean value as a method parameter helps you loudly to proclaim that the method does more than one thing.
+        This is sometimes okay, but it generally makes your code less understandable because it’s hard to see on the calling
+        side what the boolean parameter actually achieves”
+
+            “void log(String message, boolean classified) throws IOException {                   BAD
+                if (classified) {
+                    writeMessage(message, CAPTAIN_LOG);
+               } else {
+                    writeMessage(message, CREW_LOG);
+               }
+            }”
+
+            “void writeToCaptainLog(String message) throws IOException {                        GOOD
+                writeMessage(message, CAPTAIN_LOG);
+            }
+
+            void writeToCrewLog(String message) throws IOException {
+                writeMessage(message, CREW_LOG);
+            }”
+
+!!!!    “To do so, you remove the boolean method parameter and add a new method for each control-flow path that the
+        parameter was distinguishing between. You can even give the new methods expressive and meaningful names and further
+        enhance the readability of the code!”
+
+        “Good design is less clear-cut, and it requires you to have an intuition and a “feeling” for it. The only real way
+        to get this intuition is to do a lot of coding, to try out different designs, and to see what fails and what feels just right.”
+
+    52. “Split Method with Optional Parameters”
+        “Booleans as you’ve seen them in Split Method with Boolean Parameters aren’t the only indicators of methods that
+        do too much. Optional parameters have the same problem, but they’re harder to spot.”
+            (for example a date parameter that if null returns all entries, and if not null returns all entries from that date to present)
+
+        “The solution to the problem here is essentially the same as in Split Method with Boolean Parameters: we split
+        the method into two methods. Each of them captures one of the control-flow branches.”
+
+    53. “Favor Abstract Over Concrete Types”
+        “If you use more abstract types for variables, your code will be more flexible.”
+
+        “First, the supplies field uses the interface type List instead of LinkedList. This tells us that the supplies
+        are stored in an order but not how they’re stored (in an array for the ArrayList or through linked wrapper
+        objects for the LinkedList).”
+
+        “Second, the method stockUp() accepts any Collection now. This is Java’s most general interface for storing
+        objects in a data structure. It means that you can pass any subtype of Collection, any complex data structure in
+        Java, into the method.”
+
+        “Third, the method getContaminatedSupplies() returns a List instead of a more specific type. We guarantee only
+        that the supplies are ordered, but not how the list is implemented internally. This makes the code more flexible.”
+
+    54. “Favor Immutable Over Mutable State”
+        “Whenever possible, you should make the state immutable because this makes objects harder to misuse.”
+
+        “Note the usage of the final keyword in the code above. Now you need to set the value and unit fields in the
+        constructor, and you can’t change them afterward. If you compute a distance, you need a new instance every time”
+
+        “The downside of this solution is that we create more objects, but in Java small objects are cheap.
+
+        In software design, this solution is the way to go for so-called value objects[42]: percentages, money, currency,
+        times, dates, coordinates and, of course, distances. These objects are indistinguishable if their values are
+        equal: $10 is $10, even if there’s a different object representing each of those dollars.
+!!!!    So watch out for value objects and make them immutable!”
+
+    55. “Combine State and Behavior”
+        “Classes containing only behavior but lacking state indicate OO-design problems.”
+
+        “The problem is that this separation (between state and behaviour) prohibits information hiding, and it makes
+        the code more verbose.”
+
+        “A separation of state and behavior is sometimes hard to detect. As a rule of thumb, you can look out for classes
+        that are simply too large or that operate only on their method parameters. Try to simplify such classes by grouping
+        variables and methods that perform similar tasks into one class each”
+
+        “ Similarly, an Order or User in a different type of system can provide functionality on its own without a
+        manager, controller, service, or any other stateless class.”
+            Dan : not sure if I agree with this...doesn't this contradict the single responsability per class ????
+
+        “Sometimes, frameworks require you to go against this rule. For example, controllers in web frameworks are typically
+        stateless—that is, they have no fields, only method parameters. That’s by design to make it possible to create lots
+        of such controllers to handle a large amount of parallel requests—with the state residing in the database only.”
+
+        Excerpt From: Jörg Lenhard. “Java By Comparison”. Apple Books.
+
+    56. Avoid Leaking References
+        “Practically any nontrivial object has some inner state that’s accessible from the outside. You need to be careful
+         how you make this state available. Otherwise, you risk serious bugs.”
+
+        “Inventory(List<Supply> supplies) {                             BAD ? (DEPENDS ON usage..)
+            this.supplies = supplies;
+        }”
+
+        “List<Supply> getSupplies() {                                   BAD
+            return supplies;
+        }”
+
+        “Inventory(List<Supply> supplies) {                             GOOD/BETTER
+            this.supplies = new ArrayList<>(supplies);
+        }”
+
+        “List<Supply> getSupplies() {                                   GOOD/BETTER
+            return Collections.unmodifiableList(supplies);
+        }”
+
+        “The problem is that there’s only one list in memory—the one created by new ArrayList<>(). The inventory just
+        stores a reference to that list in its supplies field and returns that reference through getSupplies().
+        Essentially, the Inventory leaks the reference to its inner structure to the outside through the getter. This is
+        bad! But there’s a way to avoid this.”
+
+!!     “What’s more, it doesn’t expose the internal list through getSupplies() directly, but only after wrapping it as
+        a unmodifiableList(). This ensures read-only access. If a call wants to add an element to the list, we would
+        need to write an explicit method for that.”
+
+        “This technique is also called defensive copying. Instead of reusing a passed data structure, you make a copy to
+        avoid losing control.”
+
+    57. Avoid Returning Null
+        “When there’s no proper value to return in a method call, some programmers just return null. This can harm the
+        stability of your program!”
+
+!!!!!   “One solution would be to throw an exception—for example, an IllegalArgumentException or a NoSuchElementException.
+        (INSTEAD OF returning null)
+        This is a strong indication for a problem. You’d have to explicitly deal with it on the calling side.”
+
+!!!!!   “But in this case, we propose you use the null object pattern. Instead of returning null, you return a null object,
+        an object that explicitly indicates that it has no real value.”
+
+        “static final SpaceNation UNKNOWN_NATION = new SpaceNation("", "");”
+            (one can return this instead of a null SpaceNation object...)
+        “It’s still up to the calling side to decide what to do when encountering an UNKNOWN_NATION. The difference is that
+        we now have a choice if we want to ignore the value or throw an exception.”
+
+        “Null objects come in different forms: empty strings, empty collections, or special instantiations of a class, as
+        you can find here. But regardless of their form, they all help to overcome the “billion-dollar mistake”: the
+        introduction of the null reference by Tony Hoare (he is credited with inventing the concept in the '60s)!
+
+!!!!    In Favor Optional Over Null, we’ll show you how to force the developer to handle the presence and the absence of that value.”
+
+    “What Have You Learned?”
+        “The design of large software systems is tremendously hard but it has been explored a lot already. If you want to
+        read more on this, we recommend the classic book on Design Patterns”
+
+
+-------------------------------------------------------------------------------------------------------------------
+“Chapter 8 - ““Let Your Data Flow”
+
+    “Object-oriented programming makes code understandable by encapsulating moving parts.
+    Functional programming makes code understandable by minimizing moving parts
+        Michael Feathers”
+
+    “The release of Java 8 was a similar revolution to the Java world. Since then, it’s become possible to use the
+    functional programming paradigm with lambda expressions and streams in regular Java programs out of the box. Before
+    that, you could only use functional programming on the JVM with different languages like Scala. Now you can combine
+    all major programming styles easily in Java.”
+
+    “No single programming style describes a fundamental truth. No style is always better than the others in all
+    application scenarios. Each has its pros and cons, and it’s up to the developer to find out which suits a particular
+    situation best.”
+
+    58. “Favor Lambdas Over Anonymous Classes”
+        “In the code above, the programmer instantiated an anonymous class to implement that interface. It’s called
+        anonymous because there’s no class name and the class has only a single instance.”
+
+        “Lambdas provide implementations for functional interfaces—that is, interfaces with a single abstract method.
+        Here, lambdas are a perfect fit, because the Function interface has only a single abstract method: apply(). We
+        can write a lambdas in various ways: as one-liners or in multiple lines”
+
+        “You should avoid the multi-liner whenever possible and Favor Method References Over Lambdas instead. ”
+
+        “In Java, you usually have to specify types everywhere explicitly.
+        But for parameters of lambda expressions the compiler can figure out the types on its own in (almost) all
+        cases: it searches for the single abstract method that the lambda expression implements and uses that method
+        signature with its type specifications. This is called type inference. ”
+
+    59. “Favor Functional Over Imperative Style”
+        “When it comes to working with collections, a functional programming style can be much more readable than its
+        imperative sibling.”
+            Dan: debatable imo :)
+
+        “But usually, we’re most interested in what the code does and not so much in how it reaches its goal. That’s why
+        we invest so much effort in writing good comments and choosing good names.”
+
+    60. “Favor Method References Over Lambdas”
+        “Lambda expressions like you’ve seen them in the previous comparison can make your code more readable.
+        But these benefits come at a price: you can’t execute lambda expressions partway—you can only run the whole
+        stream. That means it’s hard to test parts of lambda expressions as you’d want to do in a unit test.”
+
+!!!!    “Code that builds on method calls, on the other hand, is easier to test, because you can call the methods
+        separately from their integration. Luckily, functional programming in Java also provides a mechanism to take
+        care of this: method references. Using method references, you can embed method calls directly as a lambda
+        expression, and that makes quality assurance easier.”
+
+        “At this point, you might think about converting your lambda expressions into methods.
+        You should do that when the expression is rather complex or when you need it multiple times to avoid “lambda duplication.”
+
+   61. Avoid Side Effects
+        “In theory, there are no side effects with functional programming. Everything’s just a function that takes data as
+        input and produces new data as output. The data you pass along is immutable.
+        But in imperative and object-oriented programming, we rely on side effects (we change data and state through
+        procedures or methods) all the time. In Java, we can now mix all these styles. This is very powerful, but it’s also
+        quite error prone. That’s why you should try to minimize side effects in your code."
+
+        “This Consumer adds an element to a list outside of the lambda expression. That’s the side effect.
+
+        “There’s no functional error in the code above, but it’s prone to break once you add concurrency. Java makes no
+        guarantees regarding the visibility of side effects among different threads. And already if you parallelize the
+        lambda expression here, it will (occasionally) produce wrong results because the ArrayList is not thread-safe.”
+
+!!!     “ beginners often fall back to the imperative style to terminate the stream—and this can only be done through side effects.”
+
+!!!     “To sum up, you should try to avoid forEach() for terminating a stream, because it can easily cause side effects.
+        Try to use collect() and reduce() instead, which we’ll explain more closely in Use Collect for Terminating
+        Complex Streams. These operators terminate a stream directly and produce the data structure you need, be it a
+        List, Set, or even a long. This makes your lambda expressions less error prone.”
+
+    62. “Use Collect for Terminating Complex Streams”
+        “If you want to get a Collection as the result of a stream, Java provides you with the collect() operator that
+         we’ve mentioned in Avoid Side Effects and many predefined Collectors that you can use out of the box.
+         You already know a few of these, like toList(), toSet(), or toMap(). But there are several others, and they’re quite powerful.”
+
+        “we use the Collectors.groupingBy() operator on the stream of Supply instances. This operator will always return
+        you a Map data structure.”
+
+        “There are a lot of additional helpful collectors available, like partitioningBy(), maxBy(), joining(),
+        mapping(), summingInt(), averagingLong(), and, of course, reducing(). In Java 9, you can even use filtering()
+        and flatMapping(), too!”
+
+    63. “Avoid Exceptions in Streams”
+        “By design streams don’t go well with checked exceptions. You have to handle them inside the stream.”
+
+        “Essentially, this comes from a mismatch of paradigms. Functions work on inputs and produce outputs.
+        Functions don’t throw (or catch) exceptions.”
+
+            .map(path -> {
+                try {
+            	    return new LogBook(path);
+            	} catch (IOException e) {
+            	    throw new UncheckedIOException(e);                      BAD
+          	    }
+            })
+           .collect(Collectors.toList());”
+
+           .flatMap(path -> {
+            try {
+           	    return Stream.of(new LogBook(path));
+           	} catch (IOException e) {
+           	    return Stream.empty();                                          GOOD
+           	}
+           	})
+           	.collect(Collectors.toList());”
+
+        “As you can see, we still have a try-catch block in the code above. There’s no way around this, but we no longer
+        convert the checked exception to an unchecked one. Instead, we simply remove the exceptional element from the stream.
+
+!!!!    To do so, we used the flatMap() operator. This one’s similar to map(), but instead of mapping a type to another one,
+        it maps a type to a Stream of another type. If everything goes right, we simply create a new stream for a single
+        element with Stream.of(element). If there are problems, we just return Stream.empty().”
+
+!!      “In a nutshell: You’re better off in the functional style if you avoid exceptions”
+
+    64. “Favor Optional Over Null”
+        “Using null references is fine for internal state where you have full control over how the reference is accessed.
+        But exposing it makes the program fragile because every caller needs to check for null, which is something that
+        people easily forget.”
+
+        “An Optional is a placeholder for an object that may or may not be present. You create it by calling
+        Optional.ofNullable() with a reference that may point to an object or to null”
+        “The big difference is that you can now spot the potential unavailability (OF an instance...hence the null posibility)
+        in the method signature.”
+
+        “But the Optional provides a handy method: ifPresent(). This method executes a Consumer you pass in, but only
+        if the value within the Optional isn’t null. Here, we simply pass in a Consumer that sends messages.
+        NullPointerException prevented!”
+
+    65. “Avoid Optional Fields or Parameters”
+        “When people learn about Optional, they start to apply it everywhere and for everything.
+        Don’t make this mistake!
+        There are situations where Optional can make your code more complicated and inconvenient to use. So let’s go over
+        where you should avoid it.”
+
+!!!!    “We know that an Optional has two states: it’s absent (or Optional.empty()) or present. Those states make sense. But
+        if you have an optional field or method parameter, then this variable can be null as well.
+        So suddenly you have three states: present, absent, or null.
+        What’s it supposed to mean if an Optional is null from a semantic point of view? Is it even more absent? That
+        doesn’t really make sense. Maybe null in this case means that the current connection should be reset?
+        This isn’t clear from the code.”
+
+        “Using optional for typing fields or parameters just makes everything more complicated. We can set fields to
+        null and pass null to methods even with Optional fields or parameters. If you use them, you’ll have to check not
+        only for null values, but also whether a value is present.”
+
+        “you should remove the Optional part in the types of fields and method parameters.
+        You should keep the Optional types only as return values. This removes the semantic overload between
+        Optional.empty() and null values.”
+
+    66. “Use Optionals as Streams”
+!!!!     “An Optional is also a special kind of stream, one with either zero or exactly one element.”
+         “That means that you can directly apply all regular stream operations, such as filter() or map(), to an Optional.
+         This makes for a good opportunity to write more concise code.”
+
+         “ Just use the arsenal of methods available in the Optional class: the intermediate operations filter(),”
+         “map(), and flatMap(), and the terminal operations orElse(), orElseThrow(), orElseGet(), and ifPresent().”
+
+
+-------------------------------------------------------------------------------------------------------------------
+“Chapter 9 - “Prepare for the Real World”
+
+    “The first 90% of the code accounts for the first 90% of the development time.
+    The remaining 10% of the code accounts for the other 90% of the development time.”
+        Tom Cargill
+
+    “The key to coping with this pace is to embrace change—that’s a part of the agile philosophy. Don’t view changing
+    requirements and circumstances as annoying, but as a sign that your software is useful, and be ready to adapt on the fly.”
+
+    “In the last chapter, we’ll touch on general aspects regarding building and running your software, like applying
+    static analysis tools, automating your build so you can do continuous integration and delivery, monitoring your
+    software in production, and speeding it up with concurrency”
+
+    67. “Use Static Code Analysis Tools”
+        “Static analysis tools provide such a bar for the quality of your code. They investigate your code and look for
+        potential bugs or code smells.”
+
+        “SpotBugs,[47] or its predecessor FindBugs, is one of the oldest static code analysis tools for Java. It detects
+        over 400 types of potential bugs”
+
+        “Checkstyle[49] and PMD[50] are two other popular tools that are quite similar to SpotBugs. Their main difference
+        is that they’re highly configurable, which makes them a powerful help if you want to ensure a certain code style.
+        The downside is they’re quite verbose, and you’ll usually want to configure them specifically for your project,
+        which can be tricky. ”
+
+        “Error Prone[51] is yet another popular static analysis tool that’s more of an enhancement to the Java compiler.
+        It performs more advanced type checks and, thankfully, provides suggestions for fixes to the numerous issues it
+        can find. It’s built by Google for their own Java code base, but the tool is open source.”
+
+    68. “Agree On the Java Format in Your Team”
+        ““Code formatting is a topic that easily leads to heated debates even when you talk about the same language.
+        Already the length of a line of code can be discussed. Should a line of code be set to 80 characters as it has
+        been traditionally or 120 characters because we have widescreen displays today? Maybe 100 characters is a good
+        compromise? Probably the most famous discussion point is whether you should indent code with tabs or spaces.
+        Few things are more controversial among developers. Ultimately, there’s no right or wrong here. The problem is
+        that all team members need to agree on a consistent formatting style to avoid constant reformatting and even bugs.”
+
+    69. Automate Your Build
+        “Gradle[57] is such a tool. It’s the rising star for Java and the default build system for
+        Android, but you’ll also use Apache Maven,[58] the established enterprise standard, or Apache Ant[59] often.
+
+    70. Use Continuous Integration
+        “All of these things—extensive testing, integration, and code quality checks—can be outsourced to dedicated
+        machines: continuous integration servers. The idea behind it all is very simple: for every commit to the version
+        control system, a dedicated server pulls all code, executes all tests, and builds a fully integrated executable.
+        It runs code quality checks and compares the results to the data from the commits before, thereby building a
+        timeline for the quality of your code. That way, it’s easy to make sure that your project is always buildable and
+        quality doesn’t go down.”
+
+        “On your own server, you can install Jenkins,[60] one of the most popular continuous integration systems in the
+        Java world. It can run your tests, and there are many plugins for quality checks. But you can also use a dedicated
+        quality analysis server. Here, the market leader is SonarQube,[61] which you can host yourself or use their cloud solution. ”
+
+    71. “Prepare for and Deliver Into Production”
+       “One part of that preparation is to implement monitoring in the form of logs, metrics, dashboards, and alerts.
+        First, you should Favor Logging Over Console Output, which we’ll explain to you in a moment. Next, you should
+        set up a central place where all your logs go. If the logs are also searchable and you can analyze them, compute
+        metrics, and visualize them in a dashboard, that’s perfect. Then, you might be able to derive key insights and
+        thresholds, like how many orders were placed within the last 24 hours. And if such a metric is below a target
+        threshold, you’ll probably want to alert the person who can bring that metric up again. For things like this,
+        we can recommend the Open Source Elastic Stack[64] and Graylog”
+
+    72. “Favor Logging Over Console Output”
+
+    73. “Minimize and Isolate Multithreaded Code”
+        “Concurrency isn’t easy to grasp, and it’s even harder to code correctly. Bugs in concurrent software can result
+        in huge problems and even loss of life, according to An Investigation of the Therac-25 Accidents [LT93]. And the
+        bad news continue: tests and static analysis are notoriously bad at ensuring the correctness of concurrent code.
+        Although costly, manual code reviews are usually a better choice.”
+
+        “Well, first of all, avoid premature optimization and multithreaded code until you have a good reason for it,
+        like terrible results from a performance benchmark. Your first guess should be that a sequential solution is
+        fast enough. Only after you measure your code and it’s too slow should you go for multithreading.”
+
+        “We recommend that you keep multithreaded code as isolated as possible—limited to few packages in your code base,
+        for example—and to document it thoroughly.”
+
+!!      “That’s why you should document concurrent access to mutable data in your code, especially how this data is
+        protected from concurrency bugs. We recommend that you use the JCIP Annotations stemming from the famous book
+        Java Concurrency in Practice [Goe06], which also explains all the nitty-gritty details of concurrency in Java.”
+
+    74. “Use High-Level Concurrency Abstractions”
+        “Sometimes (most of the time, actually), you just need to make your program multithreaded. For example, you
+        might have to handle multiple users at the same time in a web application. Or maybe you’ve got a desktop or
+        Android application that interacts with the user and the screen in a UI thread and executes compute-intense tasks
+        in background threads.
+
+        In those cases, you’ll typically let your threads communicate via shared memory: one thread writes a variable
+        that another one reads, and vice versa. Java has supported such a built-in threading model and synchronization
+        primitives since its inception. That’s been one of its major advantages in comparison to other high-level
+        languages at the time.”
+
+        “The language has evolved a lot and has undergone many improvements in terms of higher-level classes for writing
+        concurrent code. We recommend that you rely exclusively on these higher-level classes. There’s more of them than
+        we can reasonably cover here, but examples are synchronization classes such as Semaphore, CountDownLatch, or
+        CyclingBarrier and data structures such as AtomicInteger, LongAdder, ConcurrentHashMap, CopyOnWriteArrayList, or
+        BlockingQueue.”
+
+    75. “Speed Up Your Program”
+        “return supplies.stream()                                                   SLOW when dealing with a lot of entries
+            .sequential() // this can be omitted
+            .filter(Supply::isUncontaminated)
+            .map(Supply::getName)
+            .distinct()
+            .count();”
+
+        “return supplies.stream()                                                   FAST when dealing with a lot of entries
+            .parallel()
+            .filter(Supply::isUncontaminated)
+            .map(Supply::getName)
+            .distinct()
+            .count();”
+
+        “Remember, streams define what should be computed, instead of listing every detail how the computation happens.
+        Now we bring this paradigm to its pinnacle by just telling the stream that it should execute in parallel—without
+        actually describing how it should do that. That’s as easy as switching our stream from sequential() to parallel().”
+
+        “But be aware that this solution works only when you have a stream without side effects and where single
+        processing steps are independent. There’s a considerable overhead if you use operations that force the stream to
+        synchronize again, such as sort() or forEachOrdered(). In that case, the sequential() option might actually be faster.”
+
+   76. Know Your Falsehoods
+        “Some names, even simple ones, are special in other ways, and that can cause problems. Look at the case of
+        Christopher Null whose last name is, well, “Null”—something that prevents him from submitting a lot of forms in
+        the web. Some frameworks and programs interpret his name as a null reference—and prevent this poor guy from
+        entering his name into forms.”
+
+        “But the list of falsehoods doesn’t stop here. Email addresses, postal codes, CSV files, and our favorite:
+        time zones. It’s an incredibly challenging task to correctly calculate the difference in minutes between two
+        localized daytimes.
+        The point is to make you aware that you should be careful with assumptions when you program. In theory, they may
+        seem fine. But they often break in practice. Always think twice before you let your code be guided by sheer
+        assumptions to make your code ready for the real world!”
+
+   “What Have You Learned?
+        You’ve made it! This is the end of this book. We’re happy that you’ve taken this journey with us, and we hope
+        you’ll remember: the journey’s the reward. You’ve learned so much along the way.
+
+        We covered 70 examples, including code style, comments, naming, exceptions, testing, object-oriented design,
+        and functional programming to sharpen your understanding of high-quality code.”
+
+        “Obviously, it’s not just about reading the book, but about applying the principles in practice. So be sure to
+        practice. And when you do, use the comparisons in this book to help you to produce better code”
+
+
+
+
 
 
 
